@@ -4,14 +4,14 @@ import cors from "cors";
 import mongoose from "mongoose";
 import { rateLimit } from "express-rate-limit";
 import { initFirebase } from "./firebase";
-import userRouter   from "./routes/user";
+import userRouter from "./routes/user";
 import projectRouter from "./routes/project";
 import logger from "./middleware/logger";
 
 // ── Validate required env vars ────────────────────────────
-const MONGODB_URI      = process.env.MONGODB_URI;
-const PORT             = parseInt(process.env.PORT ?? "4000", 10);
-const ALLOWED_ORIGINS  = (process.env.ALLOWED_ORIGINS ?? "http://localhost:3000")
+const MONGODB_URI = process.env.MONGODB_URI;
+const PORT = parseInt(process.env.PORT ?? "4000", 10);
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:3000")
   .split(",").map((s) => s.trim());
 
 if (!MONGODB_URI) {
@@ -24,6 +24,8 @@ initFirebase();
 
 // ── Express app ───────────────────────────────────────────
 const app = express();
+
+app.use(logger);
 
 app.use(cors({
   origin: (origin, cb) => {
@@ -45,10 +47,9 @@ app.use(rateLimit({
   message: { error: "Too many requests, please slow down." },
 }));
 
-app.use(logger);
 
 // ── Routes ────────────────────────────────────────────────
-app.use("/user",    userRouter);
+app.use("/user", userRouter);
 app.use("/project", projectRouter);
 
 // Health check — useful for uptime monitors / deployment checks
