@@ -16,8 +16,8 @@ interface UserDocument extends Document {
 const ProjectSchema = new Schema<StoredProject>(
   {
     id:        { type: String, required: true },
-    changedAt: { type: Number, required: true },
-    data:      { type: String, required: true },
+    updatedAt: { type: Number, required: true },
+    zippedProject:      { type: String, required: true },
   },
   { _id: false }
 );

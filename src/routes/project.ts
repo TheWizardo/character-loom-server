@@ -1,7 +1,7 @@
 import { Router, Response } from "express";
 import { UserModel } from "../db";
 import { requireAuth, AuthRequest } from "../middleware/auth";
-import { ProjectPayload } from "../types";
+import { ProjectData, ProjectPayload, StoredProject } from "../types";
 
 const router = Router();
 
@@ -9,10 +9,17 @@ const router = Router();
 
 function isValidPayload(body: unknown): body is ProjectPayload {
   if (typeof body !== "object" || body === null) return false;
+
   const b = body as Record<string, unknown>;
+  if (typeof b.id !== "string" || b.id.length === 0) return false;
+  if (typeof b.data !== "object" || b.data === null) return false;
+
+  const data = b.data as Record<string, unknown>;
   return (
-    typeof b.id   === "string" && b.id.length > 0 &&
-    typeof b.data === "string" && b.data.length > 0
+    typeof data.zippedProject === "string" &&
+    data.zippedProject.length > 0 &&
+    typeof data.updatedAt === "number" &&
+    Number.isFinite(data.updatedAt)
   );
 }
 
@@ -29,13 +36,15 @@ router.put("/", requireAuth, async (req, res: Response) => {
   const { uid } = req as AuthRequest;
 
   if (!isValidPayload(req.body)) {
-    res.status(400).json({ error: "Body must be { id: string, data: string }" });
+    res.status(400).json({ error: "Body must be { id: string, data: { payload: string, updatedAt: number } }" });
     return;
   }
 
   const { id, data } = req.body;
-  const changedAt = Date.now();
-  const stored = { id, changedAt, data };
+  const stored: StoredProject = {
+    id,
+    ...data
+  };
 
   try {
     // Ensure user document exists
@@ -56,7 +65,7 @@ router.put("/", requireAuth, async (req, res: Response) => {
       await UserModel.updateOne({ uid }, { $push: { projects: stored } });
     }
 
-    res.json({ ok: true, projectId: id, changedAt });
+    res.json({ ok: true, projectId: id, data });
   } catch (err) {
     console.error("[PUT /project]", err);
     res.status(500).json({ error: "Internal server error" });

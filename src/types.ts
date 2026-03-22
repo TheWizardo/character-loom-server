@@ -8,14 +8,18 @@
  */
 
 /** What the client sends when saving a project */
+
+export interface ProjectData {
+  zippedProject: string; // gzip+base64 blob (cl:p:{id} value from localStorage)
+  updatedAt: number;
+}
+
 export interface ProjectPayload {
-  id:   string; // project UUID
-  data: string; // gzip+base64 blob (cl:p:{id} value from localStorage)
+  id: string; // project UUID
+  data: ProjectData;
 }
 
 /** What the server stores and returns per project */
-export interface StoredProject {
-  id:        string;
-  changedAt: number; // set by the server on every PUT — Unix ms
-  data:      string;
+export interface StoredProject extends ProjectData {
+  id: string;
 }
