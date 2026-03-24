@@ -9,22 +9,23 @@ import { StoredProject } from "./types";
  * everything about the project lives inside the compressed data blob.
  */
 interface UserDocument extends Document {
-  uid:      string;
+  uid: string;
   projects: StoredProject[];
 }
 
 const ProjectSchema = new Schema<StoredProject>(
   {
-    id:        { type: String, required: true },
+    id: { type: String, required: true },
     updatedAt: { type: Number, required: true },
-    zippedProject:      { type: String, required: true },
+    zippedProject: { type: String, required: true },
+    isPublic: { type: Boolean, required: true }
   },
   { _id: false }
 );
 
 const UserSchema = new Schema<UserDocument>(
   {
-    uid:      { type: String, required: true, unique: true, index: true },
+    uid: { type: String, required: true, unique: true, index: true },
     projects: { type: [ProjectSchema], default: [] },
   },
   { timestamps: true }

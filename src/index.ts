@@ -6,10 +6,12 @@ import { rateLimit } from "express-rate-limit";
 import { initFirebase } from "./firebase";
 import userRouter from "./routes/user";
 import projectRouter from "./routes/project";
+import shareRouter from "./routes/share";
 import logger from "./middleware/logger";
 
 // ── Validate required env vars ────────────────────────────
 const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_NAME = process.env.MONGODB_NAME;
 const PORT = parseInt(process.env.PORT ?? "4000", 10);
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "http://localhost:3000")
   .split(",").map((s) => s.trim());
@@ -51,6 +53,7 @@ app.use(rateLimit({
 // ── Routes ────────────────────────────────────────────────
 app.use("/user", userRouter);
 app.use("/project", projectRouter);
+app.use("/share", shareRouter);
 
 // Health check — useful for uptime monitors / deployment checks
 app.get("/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
@@ -60,7 +63,7 @@ app.use((_req, res) => res.status(404).json({ error: "Not found" }));
 
 // ── MongoDB + listen ──────────────────────────────────────
 mongoose
-  .connect(MONGODB_URI)
+  .connect(MONGODB_URI+MONGODB_NAME)
   .then(() => {
     console.log("MongoDB connected");
     app.listen(PORT, () => console.log(`Server listening on port ${PORT}`));

@@ -1,27 +1,10 @@
 import { Router, Response } from "express";
 import { UserModel } from "../db";
 import { requireAuth, AuthRequest } from "../middleware/auth";
-import { ProjectData, ProjectPayload, StoredProject } from "../types";
+import { StoredProject } from "../types";
+import { isValidProjectPayload } from "../middleware/validator";
 
 const router = Router();
-
-// ── validation ────────────────────────────────────────────
-
-function isValidPayload(body: unknown): body is ProjectPayload {
-  if (typeof body !== "object" || body === null) return false;
-
-  const b = body as Record<string, unknown>;
-  if (typeof b.id !== "string" || b.id.length === 0) return false;
-  if (typeof b.data !== "object" || b.data === null) return false;
-
-  const data = b.data as Record<string, unknown>;
-  return (
-    typeof data.zippedProject === "string" &&
-    data.zippedProject.length > 0 &&
-    typeof data.updatedAt === "number" &&
-    Number.isFinite(data.updatedAt)
-  );
-}
 
 // ── PUT /project ──────────────────────────────────────────
 
@@ -32,13 +15,8 @@ function isValidPayload(body: unknown): body is ProjectPayload {
  * Body:  { id: string, data: string }
  * Response: { ok: true, projectId: string, changedAt: number }
  */
-router.put("/", requireAuth, async (req, res: Response) => {
+router.put("/", requireAuth, isValidProjectPayload, async (req, res: Response) => {
   const { uid } = req as AuthRequest;
-
-  if (!isValidPayload(req.body)) {
-    res.status(400).json({ error: "Body must be { id: string, data: { payload: string, updatedAt: number } }" });
-    return;
-  }
 
   const { id, data } = req.body;
   const stored: StoredProject = {

@@ -12,6 +12,7 @@
 export interface ProjectData {
   zippedProject: string; // gzip+base64 blob (cl:p:{id} value from localStorage)
   updatedAt: number;
+  isPublic: boolean;
 }
 
 export interface ProjectPayload {
