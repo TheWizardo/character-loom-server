@@ -1,0 +1,63 @@
+services:
+  mongo:
+    image: mongo:6.0
+    container_name: mongo
+    expose: 
+      - "27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./Backend/mongo_dump:/docker-entrypoint-initdb.d:ro
+    command: ["--bind_ip_all"]
+    environment: 
+      MONGO_DB: ${MONGODB_NAME}
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: express-backend
+    restart: unless-stopped
+    # expose:
+    #   - "4000"
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: ${PORT}
+      MONGODB_URI: ${MONGODB_URI}
+      MONGODB_NAME: ${MONGODB_NAME}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
+      FIREBASE_SERVICE_ACCOUNT_PATH: ${FIREBASE_SERVICE_ACCOUNT_PATH}
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: caddy_proxy
+    restart: unless-stopped
+
+    # Bind host ports 80 (HTTP) and 443 (HTTPS) to Caddy
+    ports:
+      - "80:80"
+      - "443:443"
+
+    # Provide the Caddyfile from our project directory
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # Named volumes for Caddy's data (certs) and config. This persists
+      # across container restarts, so certificates aren't lost.
+      - caddy_data:/data
+      - caddy_config:/config
+
+    # Ensure Caddy starts AFTER backend is up
+    depends_on:
+      - backend
+
+volumes:
+  # Named volumes for persisting Caddy data (certificates, etc.)
+  caddy_data:
+  caddy_config:
+  mongo_data:
