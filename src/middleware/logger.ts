@@ -5,7 +5,7 @@ import { NextFunction, Request, Response } from "express";
 function logger(req: Request, res: Response, next: NextFunction): void {
     const urlParts = (req.baseUrl + req.originalUrl).split("?")
     if (urlParts.length === 1) {
-        console.log(`${req.method} ${urlParts[0]} --- ${req.ip}`);
+        console.log(`${req.method} ${urlParts[0]}`);
     }
     else {
         const url = [];
