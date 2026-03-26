@@ -21,7 +21,7 @@ router.put("/", requireAuth, isValidProjectPayload, async (req, res: Response) =
   const { id, data } = req.body;
   const stored: StoredProject = {
     id,
-    ...data
+    ...{...data, updatedAt: Date.now()}
   };
 
   try {

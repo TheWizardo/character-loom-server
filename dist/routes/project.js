@@ -18,7 +18,7 @@ router.put("/", auth_1.requireAuth, validator_1.isValidProjectPayload, async (re
     const { id, data } = req.body;
     const stored = {
         id,
-        ...data
+        ...{ ...data, updatedAt: Date.now() }
     };
     try {
         // Ensure user document exists
