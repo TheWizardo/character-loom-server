@@ -1,6 +1,5 @@
 import { Router, Response } from "express";
 import { UserModel } from "../db";
-import { StoredProject } from "../types";
 
 const router = Router();
 
